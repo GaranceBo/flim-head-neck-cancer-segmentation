@@ -801,3 +801,40 @@ def custom_collate(batch):
     inputs = torch.stack(inputs)
     labels = torch.stack(labels)
     return inputs, labels, list(infos)  # keep infos as list of dicts
+
+# Dataset class for PyTorch
+class CancerDatasetXenograft(Dataset):
+    def __init__(self, dataset, include_info=False):
+        self.dataset = dataset
+        self.include_info = include_info
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        data = self.dataset[idx]
+        # Convert image and mask to torch tensors
+        # image shape: (channels, height, width)
+        image = torch.tensor(data['image'], dtype=torch.float32) # (n, 3, 32, 32)
+        mask = torch.tensor(data['mask'], dtype=torch.float32).unsqueeze(0)  # add channel dim (n, 1, 32, 32)
+        if self.include_info:
+            info_dict = {
+                "dataset": data['dataset'],
+                "label": data['label'],
+                "coord": data['coord'], 
+                "coord1": data['coord1'], 
+                "coord2": data['coord2'], 
+                "original": data['original'],
+                "crop_x": data['crop_x'],
+                "crop_y": data['crop_y'],
+                "tile": data['tile'],
+                }
+            return image, mask, info_dict
+        else: 
+            return image, mask
+
+def custom_collate_xenograft(batch):
+    inputs, labels, infos = zip(*batch)
+    inputs = torch.stack(inputs)
+    labels = torch.stack(labels)
+    return inputs, labels, list(infos)  # keep infos as list of dicts
