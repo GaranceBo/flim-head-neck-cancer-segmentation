@@ -342,7 +342,7 @@ def grad_norms_stats(model):
     }
     return stats
 
-def find_best_threshold(model, val_loader, thresholds=np.arange(0, 1, 0.1)):
+def find_best_threshold(model, val_loader, device, thresholds=np.arange(0, 1, 0.1)):
     model.eval()
     all_probs = []
     all_gts = []
