@@ -6,6 +6,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 
+def setup_device():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    print(f"Using device: {device}")
+
+    if torch.cuda.is_available():
+        print(f"GPU: {torch.cuda.get_device_name(0)}")
+        print(f"CUDA available: {torch.cuda.is_available()}")
+        print(f"cuDNN version: {torch.backends.cudnn.version()}")
+
+    return device
+
+def setup_device():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    print(f"Using device: {device}")
+
+    if torch.cuda.is_available():
+        print(f"GPU: {torch.cuda.get_device_name(0)}")
+        print(f"CUDA available: {torch.cuda.is_available()}")
+        print(f"cuDNN version: {torch.backends.cudnn.version()}")
+
+    return device
+
 def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
