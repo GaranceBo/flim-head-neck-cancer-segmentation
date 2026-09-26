@@ -1,6 +1,7 @@
 from src.data_preprocessing import load_npy_dataset, crop_dataset, downsample_dataset, rotate_image_and_mask, rotate_dataset, flip_image_and_mask, flip dataset, 
 get_cropped_dataset, get_augmented_dataset, split_dataset, generate_64_dataset, load_datasets, CancerDataset, custom_collate
 from src.evaluation import evaluate_model
+from src.losses import dice_coefficient, dice_coefficient_continuous, dice_coefficient_dilated, dice_loss, BCEDiceLoss, TverskyLoss, BCETverskyLoss, numpy_dice
 
 # 1. Load data
 
