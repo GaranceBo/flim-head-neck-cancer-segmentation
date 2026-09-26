@@ -18,17 +18,15 @@ def setup_device():
 
     return device
 
-def setup_device():
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    print(f"Using device: {device}")
-
+def configure_torch():
     if torch.cuda.is_available():
-        print(f"GPU: {torch.cuda.get_device_name(0)}")
-        print(f"CUDA available: {torch.cuda.is_available()}")
-        print(f"cuDNN version: {torch.backends.cudnn.version()}")
+        torch.backends.cuda.enable_flash_sdp(True)
+        torch.backends.cuda.enable_mem_efficient_sdp(False)
+        torch.backends.cuda.enable_math_sdp(False)
+        torch.backends.cudnn.benchmark = True
+        torch.backends.cudnn.enabled = True
 
-    return device
+    torch.set_float32_matmul_precision("high")
 
 def set_seed(seed):
     random.seed(seed)
@@ -149,8 +147,6 @@ def dataset_similarity(dataset, dataset_test=None, groups=None, bins=100):
                 remaining.extend(g)
         compare(current,remaining) # Dataset class for PyTorch
     
-
-
 # Plotting function for training history
 def plot_history(history, model_name):
     plt.figure(figsize=(24, 5))
