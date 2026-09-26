@@ -82,7 +82,7 @@ for s, seed in enumerate(seeds):
         print("############################################")
         print(f"Training model {name}")
         print("############################################")
-        model, history = train_model(model_sk, ' '.join([name, 'seed', f'{s}', '256all']), train_loader, val_loader, epochs=30, lr=1e-4, patience=5, loss_type = 'BCE')
+        model, history = train_model(model_sk, ' '.join([name, 'seed', f'{s}', '256all']), device, train_dataset, train_loader, val_loader, epochs=30, lr=1e-4, patience=5, loss_type = 'BCE')
         elapsed = timeit.default_timer() - start_time
         # Print model training execution time 
         print(f'Execution time of {name} : {elapsed} seconds.')
