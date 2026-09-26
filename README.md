@@ -33,7 +33,6 @@ flim-head-neck-cancer-segmentation/
 ├── main_human.py
 ├── main_xenograft.py
 ├── requirements.txt
-├── environment.yml
 ├── CITATION.cff
 └── README.md
 ```
@@ -90,15 +89,6 @@ Create a Python environment and install the required dependencies:
 pip install -r requirements.txt
 ```
 
-### Using Conda
-
-The provided `environment.yml` file can be used to create the Conda environment:
-
-```bash
-conda env create -f environment.yml
-conda activate flim-cancer-segmentation
-```
-
 The experiments were performed using PyTorch with CUDA acceleration. GPU availability is needed for reproducing the training experiments.
 
 ## Running the examples
@@ -127,6 +117,8 @@ The scripts illustrate the complete workflow:
 6. Selecting the segmentation threshold using the validation set.
 7. Evaluating the model on the test set.
 8. Generating reconstructed segmentation images.
+
+Note: All training experiments use by default a training/validation split of 80/20. This split was also used for all experiments conducted for the publication. Splits can however be modified at will by the user.
 
 ## Models
 
