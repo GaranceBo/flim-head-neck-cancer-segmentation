@@ -3,6 +3,26 @@ import cv2
 import torch
 from torch.utils.data import Dataset
 
+def load_npy_datasets(data_dir, dataset_list_tumors):
+    tumors_dataset = []
+
+    for name in dataset_list_tumors:
+        path = os.path.join(data_dir, f"{name}_tiles.npy")
+
+        if not os.path.exists(path):
+            raise FileNotFoundError(
+                f"Dataset not found: {path}\n"
+                "Please download the dataset from Figshare "
+                "and place it in the correct directory."
+            )
+
+        data = np.load(path, allow_pickle=True)
+        tumors_dataset.extend(data)
+
+    print("Complete tumors dataset loaded successfully!")
+
+    return tumors_dataset
+
 # Crop dataset into smaller pictures (32x32) to extend dataset
 def crop_dataset(dataset, crop_size, overlap = False):
     new_dataset = []
