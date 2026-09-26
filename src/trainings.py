@@ -1,19 +1,15 @@
-import copy
-import time
-
+import numpy as np
 import torch
 import torch.nn as nn
-import torch.optim as optim
-
 from torch.amp import autocast, GradScaler
-
 from .losses import (
     BCEDiceLoss,
-    TverskyLoss,
     BCETverskyLoss,
+    dice_coefficient_continuous
 )
+from .utils import grad_norms_stats
 
-def train_model(model, name, train_loader, val_loader, epochs=50, lr=1e-4, patience=5, loss_type = 'BCE', opt = 'Adam', weight_decay = 0.01, alpha = 0.3, beta = 0.7, lambda_t = 0.7, bce_weight = 0.2, smooth = 1):
+def train_model(model, name, device, train_dataset, train_loader, val_loader, epochs=50, lr=1e-4, patience=5, loss_type = 'BCE', opt = 'Adam', weight_decay = 0.01, alpha = 0.3, beta = 0.7, lambda_t = 0.7, bce_weight = 0.2, smooth = 1):
         
     model.to(device)
     scaler = GradScaler()
