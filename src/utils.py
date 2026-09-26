@@ -5,6 +5,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
+from .losses import numpy_dice
 
 def setup_device():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
