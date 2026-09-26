@@ -1,40 +1,15 @@
+import os
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
-import torch, torchvision 
-from torchvision import models
-from torchvision.models import ResNet34_Weights, resnet50, ResNet50_Weights
+import torch
 import numpy as np
-import random 
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
-import cv2
-import skimage
-from skimage import measure, morphology
-from sklearn.utils.class_weight import compute_class_weight
-from scipy.stats import wasserstein_distance
-from scipy.signal import correlate
-from skimage.metrics import structural_similarity as ssim
-import psutil
 import gc
 import math
-import seaborn as sns
-import pandas as pd
-from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay, roc_curve, roc_auc_score, precision_recall_curve, average_precision_score
-from scipy.ndimage import binary_dilation
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader, TensorDataset
-import segmentation_models_pytorch as smp
+from sklearn.metrics import accuracy_score
 import timeit
-import time
-import logging
-from torch.amp import autocast, GradScaler
-from src.data_preprocessing import load_npy_datasets, crop_dataset, downsample_dataset, rotate_image_and_mask, rotate_dataset, flip_image_and_mask, flip_dataset, 
-get_cropped_dataset, get_augmented_dataset, split_dataset, generate_64_dataset, load_datasets, CancerDataset, custom_collate
+from src.data_preprocessing import load_npy_datasets, load_datasets, CancerDataset, custom_collate
 from src.evaluation import evaluate_model
-from src.losses import dice_coefficient, dice_coefficient_continuous, dice_coefficient_dilated, dice_loss, BCEDiceLoss, TverskyLoss, BCETverskyLoss, numpy_dice
 from src.trainings import train_model
-from src.utils import setup_device, configure_torch, set_seed, dataset_similarity, plot_history, plot_reconstruct, logits_hist_stats, grad_norms_stats, find_best_threshold, get_first_conv, analyze_first_layer, channel_ablation
+from src.utils import setup_device, configure_torch, set_seed, plot_history, plot_reconstruct, channel_ablation
 from src.models import SimpleUNet, ResNet34Segmentation32, SimpleViTSeg
 
 # Free memory
@@ -74,7 +49,7 @@ for s, seed in enumerate(seeds):
     models_list = [
         (SimpleUNet(), 'Unet dropout'), 
         (ResNet34Segmentation32(pretrained = True), 'ResNet34 pretrained'), 
-        (SimpleViTSeg(input_shape=(256,256,3)), 'Transfo2')
+        (SimpleViTSeg(input_shape=input_shape), 'Transfo2')
     ] 
     # 7. Launch training(s)
     for model_sk, name in models_list:
