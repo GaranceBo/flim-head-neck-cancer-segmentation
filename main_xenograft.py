@@ -54,9 +54,9 @@ input_shape = (256,256,3)
 res_value = [None] # Choose resolution reduction factor (in pixel square)
 train_ds_64, validation_ds_64, test_ds_64 = load_datasets_xenograft(dataset = tumors_dataset, crop = crop, dataset_test_name = name_test, aug_type = 'none', overlap = True)
 # 3. Create train/val/test datasets
-train_dataset = CancerDataset(train_ds_64, include_info=False) 
-val_dataset = CancerDataset(validation_ds_64, include_info=False)
-test_dataset = CancerDataset(test_ds_64, include_info=True)
+train_dataset = CancerDatasetXenograft(train_ds_64, include_info=False) 
+val_dataset = CancerDatasetXenograft(validation_ds_64, include_info=False)
+test_dataset = CancerDatasetXenograft(test_ds_64, include_info=True)
 batch_size = 8
 # 4. Initiate training loop
 trained_histories = []
@@ -69,7 +69,7 @@ for s, seed in enumerate(seeds):
     # 5. Create PyTorch datasets/loaders
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, generator=g)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=custom_collate)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=custom_collate_xenograft)
     # 6. Create model(s)
     models_list = [
         (SimpleUNet(), 'Unet dropout'), 
