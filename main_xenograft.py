@@ -52,7 +52,7 @@ name_test = ['dataset_240703'] # Choose unseen test tumor
 crop = (256,256) # Choose crop size (in pixel, resolution 0.908um/px) 
 input_shape = (256,256,3)
 res_value = [None] # Choose resolution reduction factor (in pixel square)
-train_ds_64, validation_ds_64, test_ds_64 = load_datasets(dataset = tumors_dataset, crop = crop, dataset_test_name = name_test, aug_type = 'none', overlap = True)
+train_ds_64, validation_ds_64, test_ds_64 = load_datasets_xenograft(dataset = tumors_dataset, crop = crop, dataset_test_name = name_test, aug_type = 'none', overlap = True)
 # 3. Create train/val/test datasets
 train_dataset = CancerDataset(train_ds_64, include_info=False) 
 val_dataset = CancerDataset(validation_ds_64, include_info=False)
