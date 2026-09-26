@@ -1,14 +1,18 @@
+import random
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 from scipy.ndimage import binary_dilation
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
+    ConfusionMatrixDisplay,
     roc_curve,
     roc_auc_score,
     precision_recall_curve,
     average_precision_score,
 )
+from .losses import dice_coefficient_continuous
 
 # Evaluation function: accuracy, dice, ROC, confusion matrix, example masks
 def evaluate_model(labels, probs, model_name, threshold=0.5, verb=True, dilated_coef=None):
