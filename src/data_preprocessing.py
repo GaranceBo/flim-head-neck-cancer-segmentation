@@ -118,6 +118,147 @@ def crop_dataset(dataset, crop_size, overlap = False):
 
     return new_dataset
 
+# Crop dataset into smaller pictures (32x32) to extend dataset
+def crop_dataset_xenograft(dataset, crop_size, overlap = False):
+
+    if crop_size[0] > dataset[0]['image'].shape[1] or crop_size[1] > dataset[0]['image'].shape[2]:
+        print("Crop size exceeds image size, returning dataset unchanged.")
+        return dataset
+    
+    new_dataset = []
+    for data in dataset:
+        image = data['image']
+        mask = data['mask']*1
+
+        # Calculate the number of crops along each dimension
+        num_crops_rows = image.shape[1] // crop_size[0]
+        num_crops_cols = image.shape[2] // crop_size[1]
+
+        # Iterate over rows of the image to crop
+        for r in range(num_crops_rows):
+            # Iterate over columns of the image to crop
+            for c in range(num_crops_cols):
+                # Crop the image for each channel
+                output_data = {}
+                output_data['label'] = data['label']
+                output_data['coord'] = data['coord']
+                output_data['coord1'] = data['coord1']
+                output_data['coord2'] = data['coord2']
+                output_data['tile'] = data['tile']
+                output_data['crop_x'] = c
+                output_data['crop_y'] = r
+                output_data['dataset'] = data['dataset']
+                output_data['original'] = data['original'] 
+                cropped_channel_images = []
+                for channel_image in image:
+                    cropped_channel_image = channel_image[r * crop_size[0]:(r + 1) * crop_size[0], c * crop_size[1]:(c + 1) * crop_size[1]]
+                    cropped_channel_images.append(cropped_channel_image)
+
+                # Crop the label
+                cropped_mask = mask[r * crop_size[0]:(r + 1) * crop_size[0], c * crop_size[1]:(c + 1) * crop_size[1]]
+
+                # Append the cropped image, its label, and the original index to the dataset
+                output_data['image'] = np.stack(cropped_channel_images, axis=0)
+                output_data['mask'] = cropped_mask
+                new_dataset.append(output_data)
+                # Crop overlapping tiles
+        if overlap:
+            # Iterate over rows of the image to crop
+            for r in range(num_crops_rows):
+                # Iterate over columns of the image to crop
+                for c in range(num_crops_cols-1): 
+                    output_data = {}
+                    output_data['label'] = data['label']
+                    output_data['coord'] = data['coord']
+                    output_data['coord1'] = data['coord1']
+                    output_data['coord2'] = data['coord2']
+                    output_data['tile'] = data['tile']
+                    output_data['crop_x'] = c
+                    output_data['crop_y'] = r
+                    output_data['dataset'] = data['dataset']
+                    # Brand as augmented/not original crop (allow delete during reconstruction)
+                    output_data['original'] = 'False'
+                    cropped_channel_images = []
+                    for channel_image in image:
+                        cropped_channel_image = channel_image[r * crop_size[0]:(r + 1) * crop_size[0], c * crop_size[1] + (crop_size[1]//2):(c + 1) * crop_size[1] + (crop_size[1]//2)]
+                        cropped_channel_images.append(cropped_channel_image)
+
+                    # Crop the label
+                    cropped_mask = mask[r * crop_size[0]:(r + 1) * crop_size[0], c * crop_size[1] + (crop_size[1]//2):(c + 1) * crop_size[1] + (crop_size[1]//2)]
+
+                    # Append the cropped image, its label, and the original index to the dataset
+                    output_data['image'] = np.stack(cropped_channel_images, axis=0)
+                    output_data['mask'] = cropped_mask
+                    new_dataset.append(output_data)
+            for r in range(num_crops_rows-1):
+                # Iterate over columns of the image to crop
+                for c in range(num_crops_cols): 
+                    output_data = {}
+                    output_data['label'] = data['label']
+                    output_data['coord'] = data['coord']
+                    output_data['coord1'] = data['coord1']
+                    output_data['coord2'] = data['coord2']
+                    output_data['tile'] = data['tile']
+                    output_data['crop_x'] = c
+                    output_data['crop_y'] = r
+                    output_data['dataset'] = data['dataset']
+                    # Brand as augmented/not original crop (allow delete during reconstruction)
+                    output_data['original'] = 'False'
+                    cropped_channel_images = []
+                    for channel_image in image:
+                        cropped_channel_image = channel_image[r * crop_size[0] + (crop_size[0]//2):(r + 1) * crop_size[0]+ (crop_size[0]//2), c * crop_size[1]:(c + 1) * crop_size[1]]
+                        cropped_channel_images.append(cropped_channel_image)
+
+                    # Crop the label
+                    cropped_mask = mask[r * crop_size[0]+ (crop_size[0]//2):(r + 1) * crop_size[0]+ (crop_size[0]//2), c * crop_size[1]:(c + 1) * crop_size[1]]
+
+                    # Append the cropped image, its label, and the original index to the dataset
+                    output_data['image'] = np.stack(cropped_channel_images, axis=0)
+                    output_data['mask'] = cropped_mask
+                    new_dataset.append(output_data)
+
+    return new_dataset
+
+# Downsample mathematically the image resolution but keep same size to match mask
+def downsample_dataset_xenograft(dataset, res_factor):
+
+    if (res_factor > dataset[0]['image'].shape[1]) or (res_factor < 1):
+        print("Downsample factor exceeds image size or inferior to 1, returning dataset unchanged.")
+        return dataset
+    
+    print("Downsampling resolution ...")
+    new_dataset = []
+    for data in dataset:
+        image = data['image']
+        mask = data['mask']*1
+        C, H, W = image.shape
+
+        output_data = {}
+        output_data['label'] = data['label']
+        output_data['coord'] = data['coord']
+        output_data['coord1'] = data['coord1']
+        output_data['coord2'] = data['coord2']
+        output_data['tile'] = data['tile']
+        output_data['dataset'] = data['dataset']
+        output_data['original'] = data['original'] 
+        output_data['mask'] = mask
+
+        downsampled_channel_images = []
+        for channel_image in image:
+            downsampled_channel_image = np.zeros_like(channel_image)
+            # Iterate over rows of the image to crop
+            for r in range(0, H, res_factor):
+                for c in range(0, W, res_factor):
+                    downsampled_channel_image[r:r+res_factor, c:c+res_factor] = np.average(channel_image[r:r+res_factor, c:c+res_factor])
+            
+            downsampled_channel_images.append(downsampled_channel_image)
+
+        output_data['image'] = np.stack(downsampled_channel_images, axis=0)
+        new_dataset.append(output_data)
+
+    print("Resolution downsampled successfully.")
+    return new_dataset
+
 # Downsample mathematically the image resolution but keep same size to match mask
 def downsample_dataset(dataset, res_factor, middle = 'avg'):
 
@@ -293,6 +434,9 @@ def get_augmented_dataset(dataset, name, aug_type, threshold = 0.5):
     print(f", Augmented {len(augmented_dataset)}.")
     return augmented_dataset
 
+def get_cropped_dataset_xenograft(dataset, crop, overlap):
+    return crop_dataset_xenograft(dataset, crop, overlap)
+
 def split_dataset(dataset):
     return (np.array([data['image'] for data in dataset]), np.array([data['mask'] for data in dataset]))
 
@@ -301,6 +445,12 @@ def generate_64_dataset(dataset, name, threshold, crop, aug_type, overlap = Fals
         return get_cropped_dataset(dataset, crop, overlap)
     else: 
         return get_augmented_dataset(get_cropped_dataset(dataset, crop, overlap), name, aug_type, threshold)
+
+def generate_64_dataset_xenograft(dataset, name, threshold, crop, aug_type, overlap = False):
+    if aug_type == 'none': 
+        return get_cropped_dataset_xenograft(dataset, crop, overlap)
+    else: 
+        return get_augmented_dataset(get_cropped_dataset_xenograft(dataset, crop, overlap), name, aug_type, threshold)
         
 def load_datasets(dataset, dataset_test = None, dataset_test_name = None, crop = 256, train_pct = 0.70, val_pct = 0.15, test_pct = 0.15, keep = [0, 1, 2], overlap = False, aug_type = 'cancer', thre = 0.5, res_factor = None, res_middle = None, mask_train = 0, mask_test = 0, bin_test = False, nadh = False) :
 
@@ -447,6 +597,126 @@ def load_datasets(dataset, dataset_test = None, dataset_test_name = None, crop =
         train_ds = generate_64_dataset(dataset[:n_val], "train", thre, crop, aug_type, overlap = overlap)
         validation_ds = generate_64_dataset(dataset[n_val:n_test], 'valid', thre, crop, aug_type, overlap = overlap)
         test_ds = generate_64_dataset(dataset[n_test:], 'test', 0.0, crop, 'none')
+
+    print(f"Total (before crop): {n_total}, (After crop) Train: {len(train_ds)}, Validation: {len(validation_ds)}, Test: {len(test_ds)}")
+
+    # Count amount of cancer/healthy images in train, validation and test datasets
+    maj_true, maj_false, maj_any, all_zero, all_one = 0, 0, 0, 0, 0
+    for i in train_ds:
+        mask = i['mask']
+        if mask.any():
+            maj_any += 1
+        if np.sum(mask) == 0:
+            all_zero += 1
+        if np.sum(mask) == mask.size:
+            all_one += 1
+        if np.sum(mask) >= (mask.size / 2):
+            maj_true += 1
+        if np.sum(mask) < (mask.size / 2):
+            maj_false += 1
+    print(f'For train dataset: \nContaining Cancer images: {maj_any}\nMajority of Cancer images: {maj_true}\nMajority Healthy images: {maj_false}\nAll Cancer images: {all_one}\nAll Healthy images: {all_zero}')
+    maj_true, maj_false, maj_any, all_zero, all_one = 0, 0, 0, 0, 0
+    for i in validation_ds:
+        mask = i['mask']
+        if mask.any():
+            maj_any += 1
+        if np.sum(mask) == 0:
+            all_zero += 1
+        if np.sum(mask) == mask.size:
+            all_one += 1
+        if np.sum(mask) >= (mask.size / 2):
+            maj_true += 1
+        if np.sum(mask) < (mask.size / 2):
+            maj_false += 1
+    print(f'For validation dataset: \nContaining Cancer images: {maj_any}\nMajority of Cancer images: {maj_true}\nMajority Healthy images: {maj_false}\nAll Cancer images: {all_one}\nAll Healthy images: {all_zero}')
+    maj_true, maj_false, maj_any, all_zero, all_one = 0, 0, 0, 0, 0
+    for i in test_ds:
+        mask = i['mask']
+        if mask.any():
+            maj_any += 1
+        if np.sum(mask) == 0:
+            all_zero += 1
+        if np.sum(mask) == mask.size:
+            all_one += 1
+        if np.sum(mask) >= (mask.size / 2):
+            maj_true += 1
+        if np.sum(mask) < (mask.size / 2):
+            maj_false += 1
+    print(f'For test dataset: \nContaining Cancer images: {maj_any}\nMajority of Cancer images: {maj_true}\nMajority Healthy images: {maj_false}\nAll Cancer images: {all_one}\nAll Healthy images: {all_zero}')
+    
+    return train_ds, validation_ds, test_ds
+
+def load_datasets_xenograft(dataset, dataset_test = None, dataset_test_name = None, crop = 256, train_pct = 0.70, val_pct = 0.15, test_pct = 0.15, keep = [0, 1, 2], overlap = False, aug_type = 'cancer', thre = 0.5, res_factor = None):
+
+    # Merge datasets if both provided and a test name is specified
+    if (dataset_test is not None) and (dataset_test_name is not None):
+        print("Merging dataset and dataset_test before selecting test set...")
+        dataset = list(dataset) + list(dataset_test)
+        dataset_test = None  
+        
+    # Shuffle dataset
+    np.random.shuffle(dataset)
+
+    # Augmentation pattern: augment cancer part or margin images part
+    aug_type = aug_type #'cancer', 'none'
+    thre = thre
+
+    # Select test set manually
+    if (dataset_test is None) and (dataset_test_name is not None):
+        dataset_test = [d for d in dataset if d['dataset'] == dataset_test_name]
+        dataset = [d for d in dataset if d['dataset'] != dataset_test_name]
+        print(f"Using {dataset_test_name} as test set ")
+
+    # Compute split indices
+    n_total = len(dataset)
+    # dataset_test available
+    n_train = int(n_total * 0.8) #n_train = int(n_total * train_pct)
+    # mixed testing
+    n_val = int(n_total*train_pct) #n_val = int(n_total * val_pct)
+    n_test = int(n_total*train_pct + n_total*val_pct)
+
+    # Print datasets
+    datasets = list({d['dataset'] for d in dataset})
+    print("The datasets included in the training are: ", datasets)
+
+    for a in range(len(dataset)):
+        vmin1, vmax1 = np.percentile(dataset[a]['image'][0], (1, 99))
+        vmin2, vmax2 = np.percentile(dataset[a]['image'][1], (1, 99))
+        vmin3, vmax3 = np.percentile(dataset[a]['image'][2], (1, 99))
+        dataset[a]['image'][0] = np.clip(dataset[a]['image'][0], vmin1, vmax1)
+        dataset[a]['image'][1] = np.clip(dataset[a]['image'][1], vmin2, vmax2)
+        dataset[a]['image'][0] /= 10
+        dataset[a]['image'][1] /= 10
+        dataset[a]['image'][2] = np.clip(dataset[a]['image'][2], vmin3, vmax3)
+        dataset[a]['image'] = dataset[a]['image'][keep]
+
+    if dataset_test is not None: 
+        for a in range(len(dataset_test)):
+            vmin1, vmax1 = np.percentile(dataset_test[a]['image'][0], (1, 99))
+            vmin2, vmax2 = np.percentile(dataset_test[a]['image'][1], (1, 99))
+            vmin3, vmax3 = np.percentile(dataset_test[a]['image'][2], (1, 99))
+            dataset_test[a]['image'][0] = np.clip(dataset_test[a]['image'][0], vmin1, vmax1)
+            dataset_test[a]['image'][1] = np.clip(dataset_test[a]['image'][1], vmin2, vmax2)
+            dataset_test[a]['image'][0] /= 10
+            dataset_test[a]['image'][1] /= 10
+            dataset_test[a]['image'][2] = np.clip(dataset_test[a]['image'][2], vmin3, vmax3)
+            dataset_test[a]['image'] = dataset_test[a]['image'][keep]
+
+    # Decrease resolution
+    if res_factor is not None: 
+        dataset = downsample_dataset_xenograft(dataset, res_factor)
+        if dataset_test is not None: 
+            dataset_test = downsample_dataset_xenograft(dataset_test, res_factor)
+
+    # Split and augment (crop and rotate) the dataset
+    if dataset_test is not None: 
+        train_ds = generate_64_dataset_xenograft(dataset[:n_train], "train", thre, crop, aug_type, overlap = overlap)
+        validation_ds = generate_64_dataset_xenograft(dataset[n_train:], 'valid', thre, crop, aug_type, overlap = overlap)
+        test_ds = generate_64_dataset_xenograft(dataset_test, 'test', 0.0, crop, 'none')
+    else: 
+        train_ds = generate_64_dataset_xenograft(dataset[:n_val], "train", thre, crop, aug_type, overlap = overlap)
+        validation_ds = generate_64_dataset_xenograft(dataset[n_val:n_test], 'valid', thre, crop, aug_type, overlap = overlap)
+        test_ds = generate_64_dataset_xenograft(dataset[n_test:], 'test', 0.0, crop, 'none')
 
     print(f"Total (before crop): {n_total}, (After crop) Train: {len(train_ds)}, Validation: {len(validation_ds)}, Test: {len(test_ds)}")
 
