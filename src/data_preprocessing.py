@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import cv2
 import torch
@@ -350,7 +351,7 @@ def rotate_dataset(dataset, angle, cancer_threshold, aug_type = 'cancer'):
     new_dataset = []
     for data in dataset:
         # Augment margins
-        if aug_type == 'margins' and np.sum(data['mask']*1) != data['mask'].size and np.sum(data['mask']*1) != 0:
+        if aug_type == 'margin' and np.sum(data['mask']*1) != data['mask'].size and np.sum(data['mask']*1) != 0:
             rotated_image, rotated_label = rotate_image_and_mask(data['image'], data['mask'], angle)
             # Append rotated image and its label
             output = data.copy()
