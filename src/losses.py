@@ -98,3 +98,10 @@ class BCETverskyLoss(nn.Module):
         loss_bce = self.bce(logits, targets)
         loss_t = self.tversky(logits, targets)
         return (1 - self.lambda_t) * loss_bce + self.lambda_t * loss_t 
+
+def numpy_dice(pred, true, eps=1e-6):
+    # pred, true: flattened numpy arrays with 0/1 values
+    pred = pred.astype(np.uint8)
+    true = true.astype(np.uint8)
+    inter = (pred & true).sum()
+    return (2.0 * inter + eps) / (pred.sum() + true.sum() + eps)
