@@ -41,6 +41,9 @@ from src.models import SimpleUNet, ResNet34Segmentation32, SimpleViTSeg
 gc.collect()
 torch.cuda.empty_cache() 
 
+device = setup_device()
+configure_torch()
+
 # 1. Load data
 dataset_list_tumors = ['dataset_240513', 'dataset_240716', 'dataset_240715', 'dataset_240627', 'dataset_240617', 'dataset_240703']
 tumors_dataset = load_npy_datasets(data, dataset_list_tumors)
