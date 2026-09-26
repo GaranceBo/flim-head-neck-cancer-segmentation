@@ -301,7 +301,7 @@ def generate_64_dataset(dataset, name, threshold, crop, aug_type, overlap = Fals
         return get_cropped_dataset(dataset, crop, overlap)
     else: 
         return get_augmented_dataset(get_cropped_dataset(dataset, crop, overlap), name, aug_type, threshold)
-
+        
 def load_datasets(dataset, dataset_test = None, dataset_test_name = None, crop = 256, train_pct = 0.70, val_pct = 0.15, test_pct = 0.15, keep = [0, 1, 2], overlap = False, aug_type = 'cancer', thre = 0.5, res_factor = None, res_middle = None, mask_train = 0, mask_test = 0, bin_test = False, nadh = False) :
 
     # Merge if dataset is a list of datasets
