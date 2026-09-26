@@ -1,10 +1,6 @@
-from src.models import ResNet34Segmentation32, UNetPPcomplete
-from src.data import load_datasets, CancerDataset, custom_collate
-from src.training import train_model
-from src.evaluation import evaluate_model
-
 from src.data_preprocessing import load_npy_dataset, crop_dataset, downsample_dataset, rotate_image_and_mask, rotate_dataset, flip_image_and_mask, flip dataset, 
 get_cropped_dataset, get_augmented_dataset, split_dataset, generate_64_dataset, load_datasets, CancerDataset, custom_collate
+from src.evaluation import evaluate_model
 
 # 1. Load data
 
