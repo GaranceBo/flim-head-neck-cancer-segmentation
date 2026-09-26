@@ -1,4 +1,5 @@
 # flim-head-neck-cancer-segmentation
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22983044.svg)](https://doi.org/10.5281/zenodo.22983044)
 
 # Deep learning segmentation of high resolution FLIM head and neck cancer images
 
@@ -164,7 +165,7 @@ The associated imaging dataset is available on Figshare:
 
 An archived version of this repository is available through Zenodo:
 
-**10.5281/zenodo.22981069**
+**10.5281/zenodo.22983044**
 
 ## License
 
