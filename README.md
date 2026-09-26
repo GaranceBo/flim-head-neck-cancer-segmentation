@@ -165,7 +165,7 @@ The associated imaging dataset is available on Figshare:
 
 An archived version of this repository is available through Zenodo:
 
-**10.5281/zenodo.22983044**
+**[10.5281/zenodo.22983044](https://doi.org/10.5281/zenodo.22983044)**
 
 ## License
 
