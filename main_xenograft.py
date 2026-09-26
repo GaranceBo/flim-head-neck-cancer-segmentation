@@ -29,11 +29,11 @@ import timeit
 import time
 import logging
 from torch.amp import autocast, GradScaler
-from src.data_preprocessing import load_npy_dataset, crop_dataset, downsample_dataset, rotate_image_and_mask, rotate_dataset, flip_image_and_mask, flip dataset, 
-get_cropped_dataset, get_augmented_dataset, split_dataset, generate_64_dataset, load_datasets, CancerDataset, custom_collate
+from src.data_preprocessing import load_npy_datasets, crop_dataset_xenograft, downsample_dataset_xenograft, rotate_image_and_mask, rotate_dataset, flip_image_and_mask, flip_dataset, 
+get_cropped_dataset_xenograft, get_augmented_dataset, split_dataset, generate_64_dataset_xenograft, load_datasets_xenograft, CancerDatasetXenograft, custom_collate_xenograft
 from src.evaluation import evaluate_model
 from src.losses import dice_coefficient, dice_coefficient_continuous, dice_coefficient_dilated, dice_loss, BCEDiceLoss, TverskyLoss, BCETverskyLoss, numpy_dice
-from src.losses import train_model
+from src.trainings import train_model
 from src.utils import setup_device, configure_torch, set_seed, dataset_similarity, plot_history, plot_reconstruct, logits_hist_stats, grad_norms_stats, find_best_threshold, get_first_conv, analyze_first_layer, channel_ablation
 from src.models import SimpleUNet, ResNet34Segmentation32, SimpleViTSeg
 
@@ -46,7 +46,7 @@ configure_torch()
 
 # 1. Load data
 dataset_list_tumors = ['dataset_240513', 'dataset_240716', 'dataset_240715', 'dataset_240627', 'dataset_240617', 'dataset_240703']
-tumors_dataset = load_npy_datasets(data, dataset_list_tumors)
+tumors_dataset = load_npy_datasets("data/xenograft", dataset_list_tumors)
 # 2. Prepare train/validation/test
 name_test = ['dataset_240703'] # Choose unseen test tumor
 crop = (256,256) # Choose crop size (in pixel, resolution 0.908um/px) 
